@@ -51,7 +51,7 @@ static HWND		hWndServer		= NULL;
 static HHOOK	hookMouse		= NULL;
 static HHOOK	hookKeyboard	= NULL;
 
-static LRESULT CALLBACK hookProcMouse(INT nCode, WPARAM wParam, LPARAM lParam)
+static LRESULT CALLBACK hookProcMouse(int nCode, WPARAM wParam, LPARAM lParam)
 {
     if (nCode >= 0)
     {
@@ -61,10 +61,12 @@ static LRESULT CALLBACK hookProcMouse(INT nCode, WPARAM wParam, LPARAM lParam)
 			case WM_NCMOUSEMOVE:
 				::SendMessage(hWndServer, static_cast<UINT>(wParam), 0, 0);
 				break;
+
 			case WM_LBUTTONUP:
 			case WM_NCLBUTTONUP:
 				::SendMessage(hWndServer, static_cast<UINT>(wParam), 0, 0);
 				return TRUE;
+
 			default:
 				break;
 		}
@@ -72,7 +74,7 @@ static LRESULT CALLBACK hookProcMouse(INT nCode, WPARAM wParam, LPARAM lParam)
 	return ::CallNextHookEx(hookMouse, nCode, wParam, lParam);
 }
 
-static LRESULT CALLBACK hookProcKeyboard(INT nCode, WPARAM wParam, LPARAM lParam)
+static LRESULT CALLBACK hookProcKeyboard(int nCode, WPARAM wParam, LPARAM lParam)
 {
     if (nCode >= 0)
     {
@@ -172,13 +174,13 @@ LRESULT CALLBACK Gripper::staticWinProc(HWND hwnd, UINT message, WPARAM wParam, 
 	switch (message)
 	{
 		case WM_NCCREATE :
-			pDlgMoving = (Gripper *)(((LPCREATESTRUCT)lParam)->lpCreateParams);
+			pDlgMoving = reinterpret_cast<Gripper *>(reinterpret_cast<LPCREATESTRUCT>(lParam)->lpCreateParams);
 			pDlgMoving->_hSelf = hwnd;
-			::SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR)pDlgMoving);
+			::SetWindowLongPtr(hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(pDlgMoving));
 			return TRUE;
 
 		default :
-			pDlgMoving = (Gripper *)::GetWindowLongPtr(hwnd, GWLP_USERDATA);
+			pDlgMoving = reinterpret_cast<Gripper *>(::GetWindowLongPtr(hwnd, GWLP_USERDATA));
 			if (!pDlgMoving)
 				return ::DefWindowProc(hwnd, message, wParam, lParam);
 			return pDlgMoving->runProc(message, wParam, lParam);
@@ -257,8 +259,8 @@ void Gripper::create()
 	// start hooking
 	::SetWindowPos(_pCont->getHSelf(), HWND_TOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
 	::SetCapture(_hSelf);
-	winVer ver = (NppParameters::getInstance())->getWinVersion();
-	hookMouse = ::SetWindowsHookEx(WH_MOUSE_LL, (HOOKPROC)hookProcMouse, _hInst, 0);
+	winVer ver = (NppParameters::getInstance()).getWinVersion();
+	hookMouse = ::SetWindowsHookEx(WH_MOUSE_LL, hookProcMouse, _hInst, 0);
 
     if (!hookMouse)
     {
@@ -270,7 +272,7 @@ void Gripper::create()
 
 	if (ver != WV_UNKNOWN && ver < WV_VISTA)
 	{
-		hookKeyboard = ::SetWindowsHookEx(WH_KEYBOARD_LL, (HOOKPROC)hookProcKeyboard, _hInst, 0);
+		hookKeyboard = ::SetWindowsHookEx(WH_KEYBOARD_LL, hookProcKeyboard, _hInst, 0);
 		if (!hookKeyboard)
 		{
 			DWORD dwError = ::GetLastError();
@@ -442,12 +444,12 @@ void Gripper::doTabReordering(POINT pt)
 				// get pointed tab item
 				info.pt	= pt;
 				::ScreenToClient(hTab, &info.pt);
-				auto iItem = ::SendMessage(hTab, TCM_HITTEST, 0, (LPARAM)&info);
+				auto iItem = ::SendMessage(hTab, TCM_HITTEST, 0, reinterpret_cast<LPARAM>(&info));
 
 				if (iItem != -1)
 				{
 					// prevent flickering of tabs with different sizes
-					::SendMessage(hTab, TCM_GETITEMRECT, iItem, (LPARAM)&rc);
+					::SendMessage(hTab, TCM_GETITEMRECT, iItem, reinterpret_cast<LPARAM>(&rc));
 					ClientRectToScreenRect(hTab, &rc);
 
 					if ((rc.left + (_rcItem.right  - _rcItem.left)) < pt.x)
@@ -462,7 +464,7 @@ void Gripper::doTabReordering(POINT pt)
 					// test if cusor points after last tab
 					auto iLastItem = ::SendMessage(hTab, TCM_GETITEMCOUNT, 0, 0) - 1;
 
-					::SendMessage(hTab, TCM_GETITEMRECT, iLastItem, (LPARAM)&rc);
+					::SendMessage(hTab, TCM_GETITEMRECT, iLastItem, reinterpret_cast<LPARAM>(&rc));
 					if ((rc.left + rc.right) < pt.x)
 					{
 						_iItem = static_cast<int32_t>(iLastItem) + 1;
@@ -504,7 +506,7 @@ void Gripper::doTabReordering(POINT pt)
 	if (_hTab && ((_hTab != hTabOld) || (_iItem != iItemOld)))
 	{
 		_tcItem.mask	= TCIF_PARAM | (_hTab == _hTabSource ? TCIF_TEXT : 0);
-		::SendMessage(_hTab, TCM_INSERTITEM, _iItem, (LPARAM)&_tcItem);
+		::SendMessage(_hTab, TCM_INSERTITEM, _iItem, reinterpret_cast<LPARAM>(&_tcItem));
 	}
 
 	// select the tab only in source tab window
@@ -873,13 +875,13 @@ void Gripper::initTabInformation()
 
 	/* get size of item */
 	_hTab = _hTabSource;
-	::SendMessage(_hTabSource, TCM_GETITEMRECT, _iItem, (LPARAM)&_rcItem);
+	::SendMessage(_hTabSource, TCM_GETITEMRECT, _iItem, reinterpret_cast<LPARAM>(&_rcItem));
 
 	/* store item data */
 	static TCHAR	szText[64];
 	_tcItem.mask		= TCIF_PARAM | TCIF_TEXT;
 	_tcItem.pszText		= szText;
 	_tcItem.cchTextMax	= 64;
-	::SendMessage(_hTabSource, TCM_GETITEM, _iItem, (LPARAM)&_tcItem);
+	::SendMessage(_hTabSource, TCM_GETITEM, _iItem, reinterpret_cast<LPARAM>(&_tcItem));
 }
 

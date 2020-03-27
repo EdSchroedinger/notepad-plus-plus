@@ -28,6 +28,8 @@
 
 #include "FindCharsInRange.h"
 #include "findCharsInRange_rc.h"
+#include "Parameters.h"
+#include "localization.h"
 
 INT_PTR CALLBACK FindCharsInRangeDlg::run_dlgProc(UINT message, WPARAM wParam, LPARAM)
 {
@@ -60,7 +62,11 @@ INT_PTR CALLBACK FindCharsInRangeDlg::run_dlgProc(UINT message, WPARAM wParam, L
 					if (!getRangeFromUI(startRange, endRange))
 					{
 						//STOP!
-						::MessageBox(_hSelf, TEXT("You should type between from 0 to 255."), TEXT("Range Value problem"), MB_OK);
+						NppParameters::getInstance().getNativeLangSpeaker()->messageBox("FindCharRangeValueError",
+							_hSelf,
+							TEXT("You should type between 0 and 255."),
+							TEXT("Range Value problem"),
+							MB_OK);
 						return TRUE;
 					}
 					getDirectionFromUI(direction, isWrap);
@@ -95,7 +101,7 @@ bool FindCharsInRangeDlg::findCharInRange(unsigned char beginRange, unsigned cha
 		(direction == dirDown)?i < totalSize:i >= 0 ;
 		(direction == dirDown)?(++i):(--i))
 	{
-		if ((unsigned char)content[i] >= beginRange && (unsigned char)content[i] <= endRange)
+		if (static_cast<unsigned char>(content[i]) >= beginRange && static_cast<unsigned char>(content[i]) <= endRange)
 		{
 			found = i;
 			break;
@@ -110,7 +116,7 @@ bool FindCharsInRangeDlg::findCharInRange(unsigned char beginRange, unsigned cha
 				(direction == dirDown)?i < totalSize:i >= 0 ;
 				(direction == dirDown)?(++i):(--i))
 			{
-				if ((unsigned char)content[i] >= beginRange && (unsigned char)content[i] <= endRange)
+				if (static_cast<unsigned char>(content[i]) >= beginRange && static_cast<unsigned char>(content[i]) <= endRange)
 				{
 					found = i;
 					break;
@@ -164,8 +170,8 @@ bool FindCharsInRangeDlg::getRangeFromUI(unsigned char & startRange, unsigned ch
 			return false;
 		if (start > end)
 			return false;
-		startRange = (unsigned char)start;
-		endRange = (unsigned char)end;
+		startRange = static_cast<unsigned char>(start);
+		endRange = static_cast<unsigned char>(end);
 		return true;
 	}
 	

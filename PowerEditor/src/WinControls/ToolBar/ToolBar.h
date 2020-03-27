@@ -26,8 +26,7 @@
 // Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 
-#ifndef TOOL_BAR_H
-#define TOOL_BAR_H
+#pragma once
 
 #include "Common.h"
 #include "Window.h"
@@ -56,7 +55,7 @@ struct iconLocator {
 	int iconIndex;
 	generic_string iconLocation;
 
-	iconLocator(int iList, int iIcon, const generic_string iconLoc) 
+	iconLocator(int iList, int iIcon, const generic_string& iconLoc)
 		: listIndex(iList), iconIndex(iIcon), iconLocation(iconLoc){};
 };
 
@@ -67,8 +66,8 @@ class TiXmlNode;
 class ToolBar : public Window
 {
 public :
-	ToolBar():Window() {};
-	virtual ~ToolBar(){};
+	ToolBar() = default;
+	virtual ~ToolBar() = default;
 
     void initTheme(TiXmlDocument *toolIconsDocRoot);
 	virtual bool init(HINSTANCE hInst, HWND hPere, toolBarStatusType type, 
@@ -76,7 +75,7 @@ public :
 
 	virtual void destroy();
 	void enable(int cmdID, bool doEnable) const {
-		::SendMessage(_hSelf, TB_ENABLEBUTTON, cmdID, (LPARAM)doEnable);
+		::SendMessage(_hSelf, TB_ENABLEBUTTON, cmdID, static_cast<LPARAM>(doEnable));
 	};
 
 	int getWidth() const;
@@ -87,11 +86,11 @@ public :
 	void setToUglyIcons();
 
 	bool getCheckState(int ID2Check) const {
-		return bool(::SendMessage(_hSelf, TB_GETSTATE, (WPARAM)ID2Check, 0) & TBSTATE_CHECKED);
+		return bool(::SendMessage(_hSelf, TB_GETSTATE, ID2Check, 0) & TBSTATE_CHECKED);
 	};
 
 	void setCheck(int ID2Check, bool willBeChecked) const {
-		::SendMessage(_hSelf, TB_CHECKBUTTON, (WPARAM)ID2Check, (LPARAM)MAKELONG(willBeChecked, 0));
+		::SendMessage(_hSelf, TB_CHECKBUTTON, ID2Check, MAKELONG(willBeChecked, 0));
 	};
 
 	toolBarStatusType getState() const {
@@ -121,23 +120,23 @@ private :
 	ToolBarIcons _toolBarIcons;
 	toolBarStatusType _state = TB_SMALL;
 	std::vector<tDynamicList> _vDynBtnReg;
-	size_t _nrButtons = 0;
-	size_t _nrDynButtons = 0;
-	size_t _nrTotalButtons = 0;
-	size_t _nrCurrentButtons = 0;
+	size_t _nbButtons = 0;
+	size_t _nbDynButtons = 0;
+	size_t _nbTotalButtons = 0;
+	size_t _nbCurrentButtons = 0;
 	ReBar * _pRebar = nullptr;
 	REBARBANDINFO _rbBand;
     std::vector<iconLocator> _customIconVect;
     TiXmlNode *_toolIcons = nullptr;
 
 	void setDefaultImageList() {
-		::SendMessage(_hSelf, TB_SETIMAGELIST , (WPARAM)0, (LPARAM)_toolBarIcons.getDefaultLst());
+		::SendMessage(_hSelf, TB_SETIMAGELIST, 0, reinterpret_cast<LPARAM>(_toolBarIcons.getDefaultLst()));
 	};
 	void setHotImageList() {
-		::SendMessage(_hSelf, TB_SETHOTIMAGELIST , (WPARAM)0, (LPARAM)_toolBarIcons.getHotLst());
+		::SendMessage(_hSelf, TB_SETHOTIMAGELIST, 0, reinterpret_cast<LPARAM>(_toolBarIcons.getHotLst()));
 	};
 	void setDisableImageList() {
-		::SendMessage(_hSelf, TB_SETDISABLEDIMAGELIST, (WPARAM)0, (LPARAM)_toolBarIcons.getDisableLst());
+		::SendMessage(_hSelf, TB_SETDISABLEDIMAGELIST, 0, reinterpret_cast<LPARAM>(_toolBarIcons.getDisableLst()));
 	};
 
 	void reset(bool create = false);
@@ -174,5 +173,3 @@ private:
 	void releaseID(int id);
 	bool isIDTaken(int id);
 };
-
-#endif // TOOL_BAR_H

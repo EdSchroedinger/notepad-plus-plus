@@ -25,8 +25,9 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
-#ifndef SMARTHIGHLIGHTER_H
-#define SMARTHIGHLIGHTER_H
+#pragma once
+
+#include "Common.h"
 
 class ScintillaEditView;
 class FindReplaceDlg;
@@ -34,9 +35,9 @@ class FindReplaceDlg;
 class SmartHighlighter {
 public:
 	explicit SmartHighlighter(FindReplaceDlg * pFRDlg);
-	void highlightView(ScintillaEditView * pHighlightView);
+	void highlightView(ScintillaEditView * pHighlightView, ScintillaEditView * unfocusView);
+	void highlightViewWithWord(ScintillaEditView * pHighlightView, const generic_string & word2Hilite);
+
 private:
 	FindReplaceDlg * _pFRDlg;
 };
-
-#endif //SMARTHIGHLIGHTER_H

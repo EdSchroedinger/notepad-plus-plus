@@ -26,21 +26,15 @@
 // Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 
-#ifndef FINDCHARSINRANGE_DLG_H
-#define FINDCHARSINRANGE_DLG_H
+#pragma once
 
-#ifndef FINDCHARSINRANGE_RC_H
 #include "findCharsInRange_rc.h"
-#endif //FINDCHARSINRANGE_RC_H
-
-#ifndef SCINTILLA_EDIT_VIEW_H
 #include "ScintillaEditView.h"
-#endif //SCINTILLA_EDIT_VIEW_H
 
 class FindCharsInRangeDlg : public StaticDialog
 {
 public :
-	FindCharsInRangeDlg() : StaticDialog() {};
+	FindCharsInRangeDlg() = default;
 
 	void init(HINSTANCE hInst, HWND hPere, ScintillaEditView **ppEditView) {
 		Window::init(hInst, hPere);
@@ -49,8 +43,8 @@ public :
 		_ppEditView = ppEditView;
 	};
 
-	virtual void create(int dialogID, bool isRTL = false) {
-		StaticDialog::create(dialogID, isRTL);
+	virtual void create(int dialogID, bool isRTL = false, bool msgDestParent = true) {
+		StaticDialog::create(dialogID, isRTL, msgDestParent);
 	};
 
 	void doDialog(bool isRTL = false) {
@@ -73,4 +67,3 @@ private :
 	void getDirectionFromUI(bool & whichDirection, bool & isWrap);
 };
 
-#endif //FINDCHARSINRANGE_DLG_H

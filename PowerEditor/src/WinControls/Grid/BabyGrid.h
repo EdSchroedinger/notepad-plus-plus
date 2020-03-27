@@ -5,13 +5,10 @@
 //Printed BABYGRID message reference and tutorial available.
 //email: mudcat@mis.net for more information.
 
-#ifndef BABYGRID_H
+#pragma once
 
 #include <windows.h>
-
-#ifndef RESOURCE_H
 #include "resource.h"
-#endif// RESOURCE_H
 
 #ifndef WM_MOUSEWHEEL
 #define WM_MOUSEWHEEL 0x020A
@@ -92,6 +89,12 @@
 #define BGM_SETALLOWCOLRESIZE BABYGRID_USER + 42
 #define BGM_SETTITLEFONT BABYGRID_USER + 43
 #define BGM_SETHEADINGFONT BABYGRID_USER + 44
+#define BGM_GETHOMEROW BABYGRID_USER + 45
+#define BGM_SETLASTVIEW BABYGRID_USER + 46
+#define BGM_SETINITIALCONTENT BABYGRID_USER + 47
+#define BGM_SETHILIGHTCOLOR_NOFOCUS BABYGRID_USER + 48
+#define BGM_SETHILIGHTCOLOR_PROTECT BABYGRID_USER + 49
+#define BGM_SETHILIGHTCOLOR_PROTECT_NOFOCUS BABYGRID_USER + 50
 
   struct _BGCELL {
          int row;
@@ -104,5 +107,3 @@ ATOM RegisterGridClass(HINSTANCE);
 LRESULT CALLBACK GridProc(HWND, UINT, WPARAM, LPARAM);
 void SetCell(_BGCELL *cell,int row, int col);
 
-
-#endif// BABYGRID_H

@@ -36,16 +36,16 @@ void RunMacroDlg::initMacroList()
 {
 	if (!isCreated()) return;
 
-	NppParameters *pNppParam = NppParameters::getInstance();
-	std::vector<MacroShortcut> & macroList = pNppParam->getMacroList();
+	NppParameters& nppParam = NppParameters::getInstance();
+	std::vector<MacroShortcut> & macroList = nppParam.getMacroList();
 
 	::SendDlgItemMessage(_hSelf, IDC_MACRO_COMBO, CB_RESETCONTENT, 0, 0);
 
 	if (::SendMessage(_hParent, WM_GETCURRENTMACROSTATUS, 0, 0) == MACRO_RECORDING_HAS_STOPPED)
-		::SendDlgItemMessage(_hSelf, IDC_MACRO_COMBO, CB_ADDSTRING, 0, (LPARAM)TEXT("Current recorded macro"));
+		::SendDlgItemMessage(_hSelf, IDC_MACRO_COMBO, CB_ADDSTRING, 0, reinterpret_cast<LPARAM>(TEXT("Current recorded macro")));
 
 	for (size_t i = 0, len = macroList.size(); i < len ; ++i)
-		::SendDlgItemMessage(_hSelf, IDC_MACRO_COMBO, CB_ADDSTRING, 0, (LPARAM)macroList[i].getName());
+		::SendDlgItemMessage(_hSelf, IDC_MACRO_COMBO, CB_ADDSTRING, 0, reinterpret_cast<LPARAM>(macroList[i].getName()));
 
 	::SendDlgItemMessage(_hSelf, IDC_MACRO_COMBO, CB_SETCURSEL, 0, 0);
 	_macroIndex = 0;
@@ -143,3 +143,4 @@ int RunMacroDlg::getMacro2Exec() const
 	bool isCurMacroPresent = ::SendMessage(_hParent, WM_GETCURRENTMACROSTATUS, 0, 0) == MACRO_RECORDING_HAS_STOPPED;
 	return isCurMacroPresent?(_macroIndex - 1):_macroIndex;
 }
+

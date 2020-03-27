@@ -42,10 +42,10 @@ BOOL DockingManager::_isRegistered = FALSE;
 static	HWND			hWndServer	= NULL;
 //Next hook in line
 static	HHOOK			gWinCallHook = NULL;
-LRESULT CALLBACK FocusWndProc(int nCode, WPARAM wParam, LPARAM lParam);
+LRESULT CALLBACK focusWndProc(int nCode, WPARAM wParam, LPARAM lParam);
 
 // Callback function that handles messages (to test focus)
-LRESULT CALLBACK FocusWndProc(int nCode, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK focusWndProc(int nCode, WPARAM wParam, LPARAM lParam)
 {
 	if (nCode == HC_ACTION && hWndServer)
 	{
@@ -164,7 +164,7 @@ void DockingManager::init(HINSTANCE hInst, HWND hWnd, Window ** ppWin)
 		hWndServer = _hSelf;
 	CoInitialize(NULL);
 	if (!gWinCallHook)	//only set if not already done
-		gWinCallHook = ::SetWindowsHookEx(WH_CALLWNDPROC, FocusWndProc, hInst, GetCurrentThreadId());
+		gWinCallHook = ::SetWindowsHookEx(WH_CALLWNDPROC, focusWndProc, hInst, GetCurrentThreadId());
 
 	if (!gWinCallHook)
 	{
@@ -187,13 +187,13 @@ LRESULT CALLBACK DockingManager::staticWinProc(HWND hwnd, UINT message, WPARAM w
 	switch (message)
 	{
 		case WM_NCCREATE :
-			pDockingManager = (DockingManager *)(((LPCREATESTRUCT)lParam)->lpCreateParams);
+			pDockingManager = reinterpret_cast<DockingManager *>(reinterpret_cast<LPCREATESTRUCT>(lParam)->lpCreateParams);
 			pDockingManager->_hSelf = hwnd;
-			::SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR)pDockingManager);
+			::SetWindowLongPtr(hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(pDockingManager));
 			return TRUE;
 
 		default :
-			pDockingManager = (DockingManager *)::GetWindowLongPtr(hwnd, GWLP_USERDATA);
+			pDockingManager = reinterpret_cast<DockingManager *>(::GetWindowLongPtr(hwnd, GWLP_USERDATA));
 			if (!pDockingManager)
 				return ::DefWindowProc(hwnd, message, wParam, lParam);
 			return pDockingManager->runProc(hwnd, message, wParam, lParam);
@@ -229,12 +229,12 @@ LRESULT DockingManager::runProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
 			// activate/deactivate titlebar of toolbars
 			for (size_t iCont = DOCKCONT_MAX, len = _vContainer.size(); iCont < len; ++iCont)
 			{
-				::SendMessage(_vContainer[iCont]->getHSelf(), WM_NCACTIVATE, wParam, (LPARAM)-1);
+				::SendMessage(_vContainer[iCont]->getHSelf(), WM_NCACTIVATE, wParam, static_cast<LPARAM>(-1));
 			}
 
 			if (static_cast<int>(lParam) != -1)
 			{
-				::SendMessage(_hParent, WM_NCACTIVATE, wParam, (LPARAM)-1);
+				::SendMessage(_hParent, WM_NCACTIVATE, wParam, static_cast<LPARAM>(-1));
 			}
 			break;
 		}
@@ -247,7 +247,8 @@ LRESULT DockingManager::runProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
 		case WM_DESTROY:
 		{
 			// unregister window event hooking BEFORE EVERYTHING ELSE
-			if (hWndServer == hwnd) {
+			if (hWndServer == hwnd)
+			{
 				UnhookWindowsHookEx(gWinCallHook);
 				gWinCallHook = NULL;
 				hWndServer = NULL;
@@ -376,7 +377,7 @@ LRESULT DockingManager::runProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
 		}
 		case DMM_GETIMAGELIST:
 		{
-			return (LPARAM)_hImageList;
+			return reinterpret_cast<LPARAM>(_hImageList);
 		}
 		case DMM_GETICONPOS:
 		{
@@ -570,7 +571,7 @@ void DockingManager::createDockableDlg(tTbData data, int iCont, bool isVisible)
 		// create image list if not exist
 		if (_hImageList == NULL)
 		{
-			int iconDpiDynamicalSize = NppParameters::getInstance()->_dpiManager.scaleY(14);
+			int iconDpiDynamicalSize = NppParameters::getInstance()._dpiManager.scaleY(14);
 			_hImageList = ::ImageList_Create(iconDpiDynamicalSize,iconDpiDynamicalSize,ILC_COLOR8, 0, 0);
 		}
 
@@ -714,7 +715,7 @@ LRESULT DockingManager::SendNotify(HWND hWnd, UINT message)
 	nmhdr.code		= message;
 	nmhdr.hwndFrom	= _hParent;
 	nmhdr.idFrom	= ::GetDlgCtrlID(_hParent);
-	::SendMessage(hWnd, WM_NOTIFY, nmhdr.idFrom, (LPARAM)&nmhdr);
+	::SendMessage(hWnd, WM_NOTIFY, nmhdr.idFrom, reinterpret_cast<LPARAM>(&nmhdr));
 	return ::GetWindowLongPtr(hWnd, DWLP_MSGRESULT);
 }
 

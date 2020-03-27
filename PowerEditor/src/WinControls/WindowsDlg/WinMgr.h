@@ -9,8 +9,7 @@
 //
 // Theo - Heavily modified to remove MFC dependencies
 //        Replaced CWnd*/HWND, CRect/RECT, CSize/SIZE, CPoint/POINT
-#ifndef WINMGR_H
-#define WINMGR_H
+
 
 #pragma once
 
@@ -58,11 +57,11 @@ inline RECT &OffsetRect(RECT& rc, POINT pt) {
 
 // handy functions to take the min or max of a SIZE
 inline SIZE minsize(SIZE a, SIZE b) {
-	return GetSize(min((UINT)a.cx,(UINT)b.cx),min((UINT)a.cy,(UINT)b.cy));
+	return GetSize(min(a.cx, b.cx), min(a.cy, b.cy));
 }
 
 inline SIZE maxsize(SIZE a, SIZE b) {
-	return GetSize(max((UINT)a.cx,(UINT)b.cx),max((UINT)a.cy,(UINT)b.cy));
+	return GetSize(max(a.cx, b.cx), max(a.cy, b.cy));
 }
 
 //////////////////
@@ -274,10 +273,9 @@ public:
 	// set TOFIT size for all windows from current window sizes
 	void InitToFitSizeFromCurrent(HWND hWnd);
 
-	// Theo - Removed Tracing
 
 protected:
-	WINRECT*	m_map;			// THE window map
+	WINRECT*	m_map = nullptr;			// THE window map
 
 	int  CountWindows();
 	BOOL SendGetSizeInfo(SIZEINFO& szi, HWND hWnd, UINT nID);
@@ -292,6 +290,3 @@ protected:
 private:
 	CWinMgr() { assert(FALSE); } // no default constructor
 };
-
-// Theo - Removed CSizerBar and CSizeableDlg
-#endif

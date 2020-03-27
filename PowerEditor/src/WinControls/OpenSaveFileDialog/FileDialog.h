@@ -26,8 +26,7 @@
 // Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 
-#ifndef FILE_DIALOG_H
-#define FILE_DIALOG_H
+#pragma once
 
 #include "Common.h"
 #include "Notepad_plus_msgs.h"
@@ -49,7 +48,7 @@ public:
 	void setExtFilter(const TCHAR *, const TCHAR *, ...);
 	
 	int setExtsFilter(const TCHAR *extText, const TCHAR *exts);
-	void setDefFileName(const TCHAR *fn){lstrcpy(_fileName, fn);}
+	void setDefFileName(const TCHAR *fn){ wcscpy_s(_fileName, fn);}
 
 	TCHAR * doSaveDlg();
 	stringVector * doOpenMultiFilesDlg();
@@ -78,4 +77,3 @@ private:
     static FileDialog *staticThis;
 };
 
-#endif //FILE_DIALOG_H

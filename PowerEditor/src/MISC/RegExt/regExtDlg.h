@@ -26,8 +26,7 @@
 // Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 
-#ifndef REG_EXT_DLG_H
-#define REG_EXT_DLG_H
+#pragma once
 
 #include "regExtDlgRc.h"
 #include "StaticDialog.h"
@@ -37,13 +36,13 @@ const int extNameLen = 32;
 class RegExtDlg : public StaticDialog
 {
 public :
-	RegExtDlg() : _isCustomize(false){};
-	~RegExtDlg(){};
+	RegExtDlg() = default;
+	~RegExtDlg() = default;
 	void doDialog(bool isRTL = false);
 
 
 private :
-	bool _isCustomize;
+	bool _isCustomize = false;
 
 	INT_PTR CALLBACK run_dlgProc(UINT Message, WPARAM wParam, LPARAM lParam);
 
@@ -65,5 +64,3 @@ private :
 		return (result == ERROR_SUCCESS)?nbSubValue:0;
 	}
 };
-
-#endif //REG_EXT_DLG_H

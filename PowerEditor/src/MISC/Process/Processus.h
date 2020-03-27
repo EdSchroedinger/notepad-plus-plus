@@ -26,10 +26,9 @@
 // Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 
-#ifndef PROCESSUS_H
-#define PROCESSUS_H
+#pragma once
 
-#include "common.h"
+#include "Common.h"
 
 enum progType {WIN32_PROG, CONSOLE_PROG};
 
@@ -39,13 +38,12 @@ public:
     Process(const TCHAR *cmd, const TCHAR *args, const TCHAR *cDir)
 		:_command(cmd), _args(args), _curDir(cDir){}
 
-	void run();
+	void run(bool isElevationRequired = false) const;
+	unsigned long runSync(bool isElevationRequired = false) const;
 
 protected:
     generic_string _command;
 	generic_string _args;
 	generic_string _curDir;
 };
-
-#endif //PROCESSUS_H
 

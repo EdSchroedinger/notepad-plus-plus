@@ -62,9 +62,9 @@ ClipboardData ClipboardHistoryPanel::getClipboadData()
 					{
 						for (size_t i = 0 ; i < (*lpLen) ; ++i)
 						{
-							clipboardData.push_back((unsigned char)lpchar[i]);
+							clipboardData.push_back(static_cast<unsigned char>(lpchar[i]));
 						}
-						GlobalUnlock(hglb); 
+						GlobalUnlock(hglbLen); 
 					}
 				}
 			}
@@ -73,10 +73,11 @@ ClipboardData ClipboardHistoryPanel::getClipboadData()
 				int nbBytes = (lstrlenW(lpWchar) + 1) * sizeof(wchar_t);
 				for (int i = 0 ; i < nbBytes ; ++i)
 				{
-					clipboardData.push_back((unsigned char)lpchar[i]);
+					clipboardData.push_back(static_cast<unsigned char>(lpchar[i]));
 				}
 			}
-			GlobalUnlock(hglb); 
+			GlobalUnlock(hglb);
+			GlobalUnlock(hglb);
 		}
 	}
 	CloseClipboard();
@@ -173,7 +174,7 @@ void ClipboardHistoryPanel::addToClipboadHistory(ClipboardData cbd)
 
 	StringArray sa(cbd, MAX_DISPLAY_LENGTH);
 	TCHAR *displayStr = (TCHAR *)sa.getPointer();
-	::SendDlgItemMessage(_hSelf, IDC_LIST_CLIPBOARD, LB_INSERTSTRING, 0, (LPARAM)displayStr);
+	::SendDlgItemMessage(_hSelf, IDC_LIST_CLIPBOARD, LB_INSERTSTRING, 0, reinterpret_cast<LPARAM>(displayStr));
 }
 
 
@@ -248,16 +249,23 @@ INT_PTR CALLBACK ClipboardHistoryPanel::run_dlgProc(UINT message, WPARAM wParam,
 								codepage = SC_CP_UTF8;
 
 							ByteArray ba(_clipboardDataVector[i]);
+							char* c = nullptr;
+							try {
+								int nbChar = WideCharToMultiByte(codepage, 0, (wchar_t *)ba.getPointer(), static_cast<int32_t>(ba.getLength()), NULL, 0, NULL, NULL);
 
-							int nbChar = WideCharToMultiByte(codepage, 0, (wchar_t *)ba.getPointer(), static_cast<int32_t>(ba.getLength()), NULL, 0, NULL, NULL);
+								c = new char[nbChar + 1];
+								WideCharToMultiByte(codepage, 0, (wchar_t *)ba.getPointer(), static_cast<int32_t>(ba.getLength()), c, nbChar + 1, NULL, NULL);
 
-							char *c = new char[nbChar+1];
-							WideCharToMultiByte(codepage, 0, (wchar_t *)ba.getPointer(), static_cast<int32_t>(ba.getLength()), c, nbChar + 1, NULL, NULL);
-
-							(*_ppEditView)->execute(SCI_REPLACESEL, 0, (LPARAM)"");
-							(*_ppEditView)->execute(SCI_ADDTEXT, strlen(c), (LPARAM)c);
-							(*_ppEditView)->getFocus();
-							delete [] c;
+								(*_ppEditView)->execute(SCI_REPLACESEL, 0, reinterpret_cast<LPARAM>(""));
+								(*_ppEditView)->execute(SCI_ADDTEXT, strlen(c), reinterpret_cast<LPARAM>(c));
+								(*_ppEditView)->getFocus();
+								delete[] c;
+							}
+							catch (...)
+							{
+								MessageBox(_hSelf,	TEXT("Cannot process this clipboard data in the history:\nThe data is too large to be treated."), TEXT("Clipboard problem"), MB_OK | MB_APPLMODAL);
+								delete[] c;
+							}
 						}
 					}
 					return TRUE;
@@ -277,13 +285,13 @@ INT_PTR CALLBACK ClipboardHistoryPanel::run_dlgProc(UINT message, WPARAM wParam,
 		case WM_CTLCOLORLISTBOX:
 		{
 			if (_lbBgColor != -1)
-				return (LRESULT)::CreateSolidBrush((COLORREF)_lbBgColor);
+				return reinterpret_cast<LRESULT>(::CreateSolidBrush(_lbBgColor));
 			break;
 		}
 
 		case WM_DRAWITEM:
 		{
-			drawItem((DRAWITEMSTRUCT *)lParam);
+			drawItem(reinterpret_cast<DRAWITEMSTRUCT *>(lParam));
 			break;
 		}
         default :
